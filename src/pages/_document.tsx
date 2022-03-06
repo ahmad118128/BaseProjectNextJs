@@ -1,8 +1,9 @@
 import * as React from 'react';
-import Document, { Html, Head, Main, NextScript } from 'next/document';
-import createEmotionServer from '@emotion/server/create-instance';
-import createEmotionCache from 'src/styles/createEmotionCache';
 
+import createEmotionServer from '@emotion/server/create-instance';
+import Document, { Html, Head, Main, NextScript } from 'next/document';
+
+import createEmotionCache from 'src/styles/createEmotionCache';
 import theme from 'src/styles/theme';
 
 export default class MyDocument extends Document {
@@ -28,7 +29,7 @@ export default class MyDocument extends Document {
 
 // `getInitialProps` belongs to `_document` (instead of `_app`),
 // it's compatible with static-site generation (SSG).
-MyDocument.getInitialProps = async (ctx) => {
+MyDocument.getInitialProps = async (context) => {
   // Resolution order
   //
   // On the server:
@@ -51,21 +52,22 @@ MyDocument.getInitialProps = async (ctx) => {
   // 3. app.render
   // 4. page.render
 
-  const originalRenderPage = ctx.renderPage;
+  const originalRenderPage = context.renderPage;
 
   // You can consider sharing the same emotion cache between all the SSR requests to speed up performance.
   // However, be aware that it can have global side effects.
   const cache = createEmotionCache();
   const { extractCriticalToChunks } = createEmotionServer(cache);
 
-  ctx.renderPage = () =>
+  context.renderPage = () =>
     originalRenderPage({
-      enhanceApp: (App: any) => (props) => <App emotionCache={cache} {...props} />,
+      // eslint-disable-next-line react/display-name
+      enhanceApp: (App: any) => (properties) => <App emotionCache={cache} {...properties} />,
     });
 
-  const initialProps = await Document.getInitialProps(ctx);
+  const InitialProperties = await Document.getInitialProps(context);
   // This is important. It prevents emotion to render invalid HTML.
-  const emotionStyles = extractCriticalToChunks(initialProps.html);
+  const emotionStyles = extractCriticalToChunks(InitialProperties.html);
   const emotionStyleTags = emotionStyles.styles.map((style) => (
     <style
       data-emotion={`${style.key} ${style.ids.join(' ')}`}
@@ -76,8 +78,8 @@ MyDocument.getInitialProps = async (ctx) => {
   ));
 
   return {
-    ...initialProps,
+    ...InitialProperties,
     // Styles fragment is rendered after the app and page rendering finish.
-    styles: [...React.Children.toArray(initialProps.styles), ...emotionStyleTags],
+    styles: [...React.Children.toArray(InitialProperties.styles), ...emotionStyleTags],
   };
 };
