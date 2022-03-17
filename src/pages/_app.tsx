@@ -15,7 +15,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <CacheProvider value={clientSideEmotionCache}>
       <Head>
-        <title>AIBOX PRO</title>
+        <title>Base Project Next js</title>
         <meta name="viewport" content="initial-scale=1, width=device-width" />
       </Head>
       <ThemeProvider theme={theme}>
